@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PQC Chain 20949 - 21M Limited</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#fff;font-family:system-ui;padding:15px}
+.card{background:#15151f;border:1px solid #2a2a40;border-radius:16px;padding:20px;margin:15px 0}
+.btn{background:linear-gradient(135deg,#6c5cff,#a855f7);border:none;color:#fff;padding:12px 24px;border-radius:10px;font-weight:700;width:100%;cursor:pointer;margin:5px 0}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#0f0f1a;color:#fff;margin:8px 0}
+h1{font-size:28px;background:linear-gradient(90deg,#6c5cff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.supply{font-size:22px;color:#00ff88;font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#0f0f1a;padding:12px;border-radius:10px;text-align:center}
+</style>
+</head>
+<body>
+
+<h1>PQC CHAIN 20949</h1>
+<p>Post Quantum Chain - 21M Limited Supply</p>
+
+<div class="card">
+<div class="grid">
+<div class="stat"><div>Total Supply</div><div class="supply">21,000,000</div></div>
+<div class="stat"><div id="minted">Minted: Loading...</div><div id="remaining">Remaining: Loading...</div></div>
+</div>
+<div style="margin-top:10px">Chain ID: 20949 | Symbol: PQC | RPC: Koyeb Backend</div>
+</div>
+
+<div class="card">
+<h3>🔗 Add To MetaMask</h3>
+<button class="btn" onclick="addChain()">Add PQC 20949 To MetaMask</button>
+</div>
+
+<div class="card">
+<h3>🚰 Faucet - 10 PQC Free</h3>
+<input id="addr" placeholder="0x... your address">
+<button class="btn" onclick="claim()">Claim 10 PQC</button>
+<div id="faucetRes" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+<h3>💰 Check Balance</h3>
+<input id="balAddr" placeholder="0x...">
+<button class="btn" onclick="checkBal()">Check Balance</button>
+<div id="balRes"></div>
+</div>
+
+<div class="card">
+<h3>⛓️ Latest Blocks - Explorer</h3>
+<div id="blocks">Loading...</div>
+<button class="btn" onclick="loadBlocks()">Refresh Blocks</button>
+</div>
+
+<div class="card">
+<h3>🔄 Swap, Bridge, Stake (Coming Soon)</h3>
+<p>15 Services - Frontend LIVE on 4everland IPFS + Arweave Permanent!</p>
+</div>
+
+<script>
+// *** YAHAN APNA KOYEB LINK DALNA - JAB MILEGA ***
+const RPC_URL = "https://pqc-20949.koyeb.app"; // <-- Apna Koyeb backend link yahan daal
+
+async function loadSupply(){
+ try{
+  let r = await fetch(`${RPC_URL}/supply`);
+  let d = await r.json();
+  document.getElementById('minted').innerText = `Minted: ${d.minted.toLocaleString()}`;
+  document.getElementById('remaining').innerText = `Remaining: ${d.remaining.toLocaleString()}`;
+ }catch(e){ document.getElementById('minted').innerText = "Backend Offline - Deploy Koyeb"; }
+}
+
+async function claim(){
+ let a = document.getElementById('addr').value;
+ if(!a) return alert('Address daal');
+ document.getElementById('faucetRes').innerText = "Claiming...";
+ try{
+  let r = await fetch(`${RPC_URL}/faucet`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({address:a})});
+  let d = await r.json();
+  if(d.error) document.getElementById('faucetRes').innerText = d.error;
+  else document.getElementById('faucetRes').innerText = `Success! 10 PQC Sent! Block #${d.block.index} | Remaining Supply: ${d.remainingSupply}`;
+  loadSupply(); loadBlocks();
+ }catch(e){ document.getElementById('faucetRes').innerText = "Error - Backend not deployed - Koyeb link check kar"; }
+}
+
+async function checkBal(){
+ let a = document.getElementById('balAddr').value;
+ let r = await fetch(`${RPC_URL}/balance/${a}`);
+ let d = await r.json();
+ document.getElementById('balRes').innerText = `Balance: ${d.balance} PQC`;
+}
+
+async function loadBlocks(){
+ try{
+  let r = await fetch(`${RPC_URL}/blocks`);
+  let d = await r.json();
+  let h = "";
+  d.forEach(b=>{ h += `<div style="border-bottom:1px solid #222;padding:8px 0">#${b.index} - ${b.tx||b.hash}<br><small>${b.hash}</small></div>` });
+  document.getElementById('blocks').innerHTML = h || "No blocks yet";
+ }catch(e){ document.getElementById('blocks').innerText = "Backend offline"; }
+}
+
+async function addChain(){
+ try{
+  await window.ethereum.request({
+   method:'wallet_addEthereumChain',
+   params:[{chainId:'0x51D1', chainName:'PQC Chain 20949', nativeCurrency:{name:'PQC',symbol:'PQC',decimals:18}, rpcUrls:[RPC_URL], blockExplorerUrls:[window.location.href]}]
+  });
+  alert('PQC Added to MetaMask!');
+ }catch(e){ alert(e.message); }
+}
+
+loadSupply(); loadBlocks();
+setInterval(loadSupply, 5000);
+</script>
+</body>
+  </html>
